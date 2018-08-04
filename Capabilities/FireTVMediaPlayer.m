@@ -23,6 +23,7 @@
 #import "FireTVMediaControl.h"
 #import "FireTVService.h"
 #import "SubtitleInfo.h"
+#import "ConnectError.h"
 
 #import "NSMutableDictionary+NilSafe.h"
 
