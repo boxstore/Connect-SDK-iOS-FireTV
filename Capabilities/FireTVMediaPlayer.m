@@ -61,7 +61,7 @@
                        success:(MediaPlayerSuccessBlock)success
                        failure:(FailureBlock)failure {
     NSString *metadata = [self metadataStringForMediaInfo:mediaInfo];
-
+    
     [self continueTask:[self.remoteMediaPlayer setMediaSourceToURL:mediaInfo.url.absoluteString
                                                           metaData:metadata
                                                           autoPlay:YES
@@ -70,11 +70,11 @@
       LaunchSession *session = [LaunchSession new];
       session.sessionType = LaunchSessionTypeMedia;
       session.service = self.service;
-
+      
       MediaLaunchObject *object = [[MediaLaunchObject alloc]
                                    initWithLaunchSession:session
                                    andMediaControl:self.service.fireTVMediaControl];
-
+      
       success(object);
   }
         ifSuccessBlock:success
@@ -158,11 +158,11 @@
                                                  mimeType:mimeType];
     mediaInfo.title = title;
     mediaInfo.description = description;
-
+    
     ImageInfo *imageInfo = [[ImageInfo alloc] initWithURL:iconURL
                                                      type:ImageTypeVideoPoster];
     [mediaInfo addImage:imageInfo];
-
+    
     [self playMediaWithMediaInfo:mediaInfo
                       shouldLoop:shouldLoop
                          success:^(MediaLaunchObject *mediaLaunchObject) {
@@ -186,12 +186,21 @@
     [metadataDict setNullableObject:iconURL forKey:@"poster"];
     // "noreplay" hides the player's manual repeat dialog at EOF
     metadataDict[@"noreplay"] = @YES;
-
-    if (mediaInfo.subtitleInfo) {
+    
+    if (mediaInfo.tracks && mediaInfo.tracks.count > 0) {
+        NSMutableArray *tracks = [[NSMutableArray alloc] init];
+        for (int i = 0; i < mediaInfo.tracks.count; i++) {
+            SubtitleInfo *info = mediaInfo.tracks[i];
+            NSDictionary *subtitleMetadata = [self subtitleMetadataForSubtitleInfo: info];
+            [tracks addObject:subtitleMetadata];
+        }
+        metadataDict[@"tracks"] = tracks;
+    }
+    else if (mediaInfo.subtitleInfo) {
         NSDictionary *subtitleMetadata = [self subtitleMetadataForSubtitleInfo:mediaInfo.subtitleInfo];
         metadataDict[@"tracks"] = @[subtitleMetadata];
     }
-
+    
     NSData *data = [NSJSONSerialization dataWithJSONObject:metadataDict
                                                    options:0
                                                      error:nil];
@@ -207,7 +216,7 @@
     [metadataDict setNullableObject:(subtitleInfo.label ?: @"")
                              forKey:@"label"];
     metadataDict[@"kind"] = @"subtitles";
-
+    
     return metadataDict;
 }
 

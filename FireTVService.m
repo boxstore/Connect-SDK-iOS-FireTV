@@ -51,7 +51,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
 
 - (instancetype)initWithAppStateChangeNotifier:(nullable AppStateChangeNotifier *)stateNotifier {
     self = [super init];
-
+    
     _appStateChangeNotifier = stateNotifier ?: [AppStateChangeNotifier new];
     __weak typeof(self) wself = self;
     _appStateChangeNotifier.didBackgroundBlock = ^{
@@ -64,7 +64,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
         // using an ivar here in order not to init the property if it's nil
         [sself->_fireTVMediaControl resumeSubscriptions];
     };
-
+    
     return self;
 }
 
@@ -78,7 +78,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
     if (!_delegateBlockRunner) {
         _delegateBlockRunner = [DispatchQueueBlockRunner mainQueueRunner];
     }
-
+    
     return _delegateBlockRunner;
 }
 
@@ -87,7 +87,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
         _capabilityMixin = [[FireTVCapabilityMixin alloc]
                             initWithRemoteMediaPlayer:self.remoteMediaPlayer];
     }
-
+    
     return _capabilityMixin;
 }
 
@@ -97,7 +97,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
         _fireTVMediaPlayer.capabilityMixin = self.capabilityMixin;
         _fireTVMediaPlayer.service = self;
     }
-
+    
     return _fireTVMediaPlayer;
 }
 
@@ -106,7 +106,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
         _fireTVMediaControl = [FireTVMediaControl new];
         _fireTVMediaControl.capabilityMixin = self.capabilityMixin;
     }
-
+    
     return _fireTVMediaControl;
 }
 
@@ -130,7 +130,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
                               kMediaPlayerMetaDataThumbnail,
                               kMediaPlayerMetaDataMimeType,
                               kMediaPlayerSubtitleWebVTT,
-
+                              kMediaPlayerMultipleSubtitle,
                               kMediaControlPlay,
                               kMediaControlPause,
                               kMediaControlStop,
@@ -140,7 +140,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
                               kMediaControlPlayState,
                               kMediaControlPlayStateSubscribe,
                               kMediaControlMetadata];
-
+    
     self.capabilities = capabilities;
 }
 
@@ -149,7 +149,7 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
                   @"The RemoteMediaPlayer device object must be available");
     const BOOL deviceIsChanging = self.serviceDescription.device != serviceDescription.device;
     [super setServiceDescription:serviceDescription];
-
+    
     if (deviceIsChanging) {
         // reinit the capabilityMixin, and assign it to capabilities
         _capabilityMixin = nil;
@@ -168,9 +168,9 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
 
 - (void)connect {
     self.connected = YES;
-
+    
     [self.appStateChangeNotifier startListening];
-
+    
     [self.delegateBlockRunner runBlock:^{
         [self.delegate deviceServiceConnectionSuccess:self];
     }];
@@ -178,10 +178,10 @@ NSString *const kConnectSDKFireTVServiceId = @"FireTV";
 
 - (void)disconnect {
     self.connected = NO;
-
+    
     [self.fireTVMediaControl unsubscribeSubscriptions];
     [self.appStateChangeNotifier stopListening];
-
+    
     [self.delegateBlockRunner runBlock:^{
         [self.delegate deviceService:self disconnectedWithError:nil];
     }];
